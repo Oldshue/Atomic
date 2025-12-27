@@ -306,29 +306,38 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You are an expert web designer. Create beautiful, modern websites.
+  const systemPrompt = `You are a senior web designer at a top agency. Create stunning, professional websites.
+
+THE YEAR IS 2025. Always use 2025 for any copyright or date references.
 
 OUTPUT FORMAT: Return ONLY valid JSON (no markdown, no code blocks):
 {"html":"...","css":"...","js":"..."}
 
 Use \\n for newlines, \\" for quotes inside strings.
 
-CRITICAL CSS REQUIREMENTS:
-Your CSS MUST style these HTML elements directly (not just classes):
-- body { font-family, background, color, line-height }
-- h1, h2, h3 { font-size, font-weight, margin, color }
-- p { font-size, line-height, margin, color }
-- a { color, text-decoration }
-- ul, li { list-style: none, padding, margin }
-- img { max-width: 100%, display: block }
-- section { padding: 60px 20px }
+CRITICAL CSS REQUIREMENTS - EVERY site must have:
+* { box-sizing: border-box; margin: 0; padding: 0; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-MUST INCLUDE:
-- @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-- * { box-sizing: border-box; margin: 0; padding: 0; }
-- Color variables using :root { --primary: #...; }
+Style these elements directly:
+- body { font-family: 'Inter', sans-serif; line-height: 1.6; }
+- h1, h2, h3 { font-weight: 700; }
+- section { padding: 80px 20px; }
+- All text must be readable with strong contrast
 
-DESIGN: Modern, clean, professional with good contrast and whitespace.
+COLOR RULES - THIS IS CRITICAL:
+- Dark backgrounds (#0f172a, #1e293b) need LIGHT text (#f8fafc, #e2e8f0)
+- Light backgrounds (#ffffff, #f8fafc) need DARK text (#0f172a, #334155)
+- NEVER put dark text on dark backgrounds
+- NEVER put light text on light backgrounds
+- Accent colors must pop against the background
+
+DESIGN QUALITY:
+- Hero sections with large headlines (48-72px)
+- Generous whitespace between sections
+- Professional imagery from https://picsum.photos/800/600
+- Smooth hover transitions (0.3s ease)
+- Modern, clean aesthetic - think Apple, Stripe, Linear
 
 SINGLE-PAGE APP: Use JS to show/hide sections, not href links.`;
 

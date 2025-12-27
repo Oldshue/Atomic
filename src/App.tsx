@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Preview } from './components/Preview';
 import { CommandPanel } from './components/CommandPanel';
 import { SettingsModal } from './components/SettingsModal';
-import { generateCodeStreaming, getDefaultCode, getStoredApiKey } from './services/codeGenerator';
+import { generateCodeStreaming, getDefaultCode, getStoredApiKey, buildPreviewHtml } from './services/codeGenerator';
 import type { Message, GeneratedCode } from './types';
 import './App.css';
 
@@ -11,6 +11,19 @@ function App() {
   const [currentCode, setCurrentCode] = useState<GeneratedCode>(getDefaultCode());
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  const handleExport = useCallback(() => {
+    const html = buildPreviewHtml(currentCode);
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-site.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [currentCode]);
 
   const handleSendMessage = useCallback(async (content: string) => {
     // Check for API key
@@ -79,7 +92,17 @@ function App() {
           </svg>
           <span>Atomic</span>
         </div>
-        <p className="tagline">Vibecode your web app</p>
+        <div className="header-actions">
+          <button className="export-btn" onClick={handleExport}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export
+          </button>
+          <p className="tagline">Vibecode your web app</p>
+        </div>
       </header>
 
       <main className="app-main">

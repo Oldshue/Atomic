@@ -206,18 +206,22 @@ JS: ${currentCode.js}`;
   const content = data.content[0]?.text || '';
 
   try {
-    // Try to parse the JSON response
+    // Try to parse the JSON response - handle escaped strings
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
-      return {
-        html: parsed.html || currentCode.html,
-        css: parsed.css || currentCode.css,
-        js: parsed.js || currentCode.js
-      };
+      // Ensure we have valid strings, not undefined
+      if (parsed.html || parsed.css || parsed.js) {
+        return {
+          html: typeof parsed.html === 'string' ? parsed.html : currentCode.html,
+          css: typeof parsed.css === 'string' ? parsed.css : currentCode.css,
+          js: typeof parsed.js === 'string' ? parsed.js : currentCode.js
+        };
+      }
     }
   } catch (e) {
     console.error('Failed to parse response:', e);
+    console.error('Raw content:', content);
   }
 
   return currentCode;

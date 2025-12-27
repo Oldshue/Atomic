@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Preview } from './components/Preview';
 import { CommandPanel } from './components/CommandPanel';
 import { SettingsModal } from './components/SettingsModal';
-import { generateCode, getDefaultCode, getStoredApiKey } from './services/codeGenerator';
+import { generateCodeStreaming, getDefaultCode, getStoredApiKey } from './services/codeGenerator';
 import type { Message, GeneratedCode } from './types';
 import './App.css';
 
@@ -35,13 +35,18 @@ function App() {
         content: m.content
       }));
 
-      const newCode = await generateCode(content, currentCode, conversationHistory);
+      const newCode = await generateCodeStreaming(
+        content,
+        currentCode,
+        conversationHistory,
+        (updatedCode) => setCurrentCode(updatedCode)
+      );
       setCurrentCode(newCode);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Updated the preview with your changes!',
+        content: 'Done!',
         timestamp: new Date()
       };
 

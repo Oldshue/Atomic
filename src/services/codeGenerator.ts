@@ -141,10 +141,11 @@ console.log('%c⚛ ATOMIC', 'color: #00ff9d; font-size: 20px; font-weight: bold;
 console.log('%cDescribe what you want to build...', 'color: #6b6b7a;');`
 };
 
-export async function generateCode(
+export async function generateCodeStreaming(
   prompt: string,
   currentCode: GeneratedCode,
-  conversationHistory: Array<{ role: string; content: string }>
+  conversationHistory: Array<{ role: string; content: string }>,
+  onUpdate: (code: GeneratedCode) => void
 ): Promise<GeneratedCode> {
   const apiKey = getStoredApiKey();
 
@@ -192,6 +193,7 @@ JS: ${currentCode.js}`;
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 8192,
+      stream: true,
       system: systemPrompt,
       messages: messages
     })
@@ -202,29 +204,57 @@ JS: ${currentCode.js}`;
     throw new Error(error.error?.message || `API request failed: ${response.status}`);
   }
 
-  const data = await response.json();
-  const content = data.content[0]?.text || '';
-
-  try {
-    // Try to parse the JSON response - handle escaped strings
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      // Ensure we have valid strings, not undefined
-      if (parsed.html || parsed.css || parsed.js) {
-        return {
-          html: typeof parsed.html === 'string' ? parsed.html : currentCode.html,
-          css: typeof parsed.css === 'string' ? parsed.css : currentCode.css,
-          js: typeof parsed.js === 'string' ? parsed.js : currentCode.js
-        };
-      }
-    }
-  } catch (e) {
-    console.error('Failed to parse response:', e);
-    console.error('Raw content:', content);
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('No response body');
   }
 
-  return currentCode;
+  const decoder = new TextDecoder();
+  let fullContent = '';
+  let lastParsedCode = currentCode;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    const lines = chunk.split('\n');
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6);
+        if (data === '[DONE]') continue;
+
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            fullContent += parsed.delta.text;
+
+            // Try to parse partial JSON and update preview
+            try {
+              const jsonMatch = fullContent.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const codeObj = JSON.parse(jsonMatch[0]);
+                const newCode = {
+                  html: typeof codeObj.html === 'string' ? codeObj.html : lastParsedCode.html,
+                  css: typeof codeObj.css === 'string' ? codeObj.css : lastParsedCode.css,
+                  js: typeof codeObj.js === 'string' ? codeObj.js : lastParsedCode.js
+                };
+                lastParsedCode = newCode;
+                onUpdate(newCode);
+              }
+            } catch {
+              // JSON not complete yet, continue
+            }
+          }
+        } catch {
+          // Skip invalid JSON
+        }
+      }
+    }
+  }
+
+  return lastParsedCode;
 }
 
 export function getDefaultCode(): GeneratedCode {

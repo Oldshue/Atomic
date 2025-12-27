@@ -102,6 +102,8 @@
   border-radius: 8px;
   font-size: 13px;
   line-height: 1.4;
+  user-select: text;
+  cursor: text;
 }
 
 .user .messageContent {
@@ -170,7 +172,10 @@
   font-family: inherit;
   resize: none;
   outline: none;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 42px;
+  max-height: 150px;
+  overflow-y: auto;
 }
 
 .input:focus {

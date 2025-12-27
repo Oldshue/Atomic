@@ -24,6 +24,15 @@ export function CommandPanel({ messages, isGenerating, onSendMessage, onOpenSett
     }
   }, [isGenerating]);
 
+  // Auto-resize textarea as user types
+  useEffect(() => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+    }
+  }, [input]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isGenerating) {

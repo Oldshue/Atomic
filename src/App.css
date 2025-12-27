@@ -86,23 +86,42 @@
 .app-main {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 16px;
   min-height: 0;
+}
+
+.command-section {
+  width: 380px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .preview-section {
   flex: 1;
-  min-height: 0;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 20px;
   overflow: hidden;
 }
 
-.command-section {
-  flex-shrink: 0;
+@media (max-width: 900px) {
+  .app-main {
+    flex-direction: column;
+  }
+
+  .command-section {
+    width: 100%;
+    order: 2;
+    max-height: 300px;
+  }
+
+  .preview-section {
+    order: 1;
+    flex: 1;
+  }
 }
 
 @media (max-width: 768px) {
@@ -117,6 +136,11 @@
     gap: 2px;
   }
 
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .logo {
     font-size: 18px;
   }
@@ -129,5 +153,4 @@
   .tagline {
     font-size: 10px;
   }
-
 }

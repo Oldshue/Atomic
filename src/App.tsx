@@ -106,9 +106,6 @@ function App() {
       </header>
 
       <main className="app-main">
-        <div className="preview-section">
-          <Preview code={currentCode} />
-        </div>
         <div className="command-section">
           <CommandPanel
             messages={messages}
@@ -116,6 +113,9 @@ function App() {
             onSendMessage={handleSendMessage}
             onOpenSettings={() => setShowSettings(true)}
           />
+        </div>
+        <div className="preview-section">
+          <Preview code={currentCode} />
         </div>
       </main>
 

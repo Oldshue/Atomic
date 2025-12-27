@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Preview } from './components/Preview';
 import { CommandPanel } from './components/CommandPanel';
 import { SettingsModal } from './components/SettingsModal';
-import { generateCodeStreaming, generatePlan, getDefaultCode, getStoredApiKey, buildPreviewHtml } from './services/codeGenerator';
+import { generateCodeStreaming, getDefaultCode, getStoredApiKey, buildPreviewHtml } from './services/codeGenerator';
 import type { Message, GeneratedCode } from './types';
 import './App.css';
 
@@ -42,34 +42,13 @@ function App() {
     setMessages((prev) => [...prev, userMessage]);
     setIsGenerating(true);
 
-    const planMessageId = (Date.now() + 1).toString();
+    const buildMessageId = (Date.now() + 1).toString();
 
     try {
-      // Phase 1: Planning
-      const planMessage: Message = {
-        id: planMessageId,
-        role: 'assistant',
-        content: '**Planning...**\n',
-        timestamp: new Date()
-      };
-      setMessages((prev) => [...prev, planMessage]);
-
-      const plan = await generatePlan(content, (partialPlan) => {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === planMessageId
-              ? { ...m, content: partialPlan }
-              : m
-          )
-        );
-      });
-
-      // Phase 2: Building
-      const buildMessageId = (Date.now() + 2).toString();
       const buildMessage: Message = {
         id: buildMessageId,
         role: 'assistant',
-        content: '⚡ **Building...**',
+        content: 'Building...',
         timestamp: new Date()
       };
       setMessages((prev) => [...prev, buildMessage]);
@@ -83,8 +62,7 @@ function App() {
         content,
         currentCode,
         conversationHistory,
-        (updatedCode) => setCurrentCode(updatedCode),
-        plan
+        (updatedCode) => setCurrentCode(updatedCode)
       );
       setCurrentCode(newCode);
 
@@ -92,15 +70,15 @@ function App() {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === buildMessageId
-            ? { ...m, content: '✓ **Done!** Your site is ready. Click Export to download.' }
+            ? { ...m, content: 'Done! Your site is ready. Click Export to download.' }
             : m
         )
       );
     } catch (error) {
       const errorMessage: Message = {
-        id: (Date.now() + 3).toString(),
+        id: (Date.now() + 2).toString(),
         role: 'assistant',
-        content: `**Error:** ${error instanceof Error ? error.message : 'Something went wrong'}`,
+        content: `Error: ${error instanceof Error ? error.message : 'Something went wrong'}`,
         timestamp: new Date()
       };
 

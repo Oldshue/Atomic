@@ -298,8 +298,7 @@ export async function generateCodeStreaming(
   prompt: string,
   currentCode: GeneratedCode,
   conversationHistory: Array<{ role: string; content: string }>,
-  onUpdate: (code: GeneratedCode) => void,
-  plan?: string
+  onUpdate: (code: GeneratedCode) => void
 ): Promise<GeneratedCode> {
   const apiKey = getStoredApiKey();
 
@@ -307,9 +306,7 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const planContext = plan ? `\n\nDESIGN PLAN TO FOLLOW:\n${plan}\n\nFollow this plan closely when building.` : '';
-
-  const systemPrompt = `You are an expert web developer. Generate complete HTML, CSS, and JavaScript code.${planContext}
+  const systemPrompt = `You are an expert web developer. Generate complete HTML, CSS, and JavaScript code.
 
 RESPONSE FORMAT - Output ONLY this JSON structure:
 {"html":"...","css":"...","js":"..."}

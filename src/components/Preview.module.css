@@ -2,7 +2,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 800px;
+  max-width: min(800px, 100%);
+  max-height: 100%;
   aspect-ratio: 16 / 9;
   background: var(--bg-secondary);
   border-radius: 8px;
@@ -106,11 +107,21 @@
   flex: 1;
   overflow: hidden;
   background: #0a0a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iframeWrapper {
+  width: 1280px;
+  height: 720px;
+  transform-origin: center center;
+  flex-shrink: 0;
 }
 
 .iframe {
-  width: 100%;
-  height: 100%;
+  width: 1280px;
+  height: 720px;
   border: none;
-  background: #0a0a0f;
+  background: white;
 }

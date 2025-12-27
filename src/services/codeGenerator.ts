@@ -308,29 +308,29 @@ export async function generateCodeStreaming(
 
   const systemPrompt = `You are an expert web designer. Create beautiful, modern websites.
 
-OUTPUT FORMAT: Return ONLY valid JSON (no markdown, no explanation):
+OUTPUT FORMAT: Return ONLY valid JSON (no markdown, no code blocks):
 {"html":"...","css":"...","js":"..."}
 
 Use \\n for newlines, \\" for quotes inside strings.
 
-CRITICAL - Your CSS must include:
-- A complete CSS reset (*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; })
-- @import for Google Fonts (Inter or Poppins)
-- Styled sections with padding (60-100px), backgrounds, colors
-- Styled typography (font-family, font-size, line-height, color)
-- Styled buttons, cards, and interactive elements
-- Flexbox or Grid layouts
-- Media queries for mobile
+CRITICAL CSS REQUIREMENTS:
+Your CSS MUST style these HTML elements directly (not just classes):
+- body { font-family, background, color, line-height }
+- h1, h2, h3 { font-size, font-weight, margin, color }
+- p { font-size, line-height, margin, color }
+- a { color, text-decoration }
+- ul, li { list-style: none, padding, margin }
+- img { max-width: 100%, display: block }
+- section { padding: 60px 20px }
 
-DESIGN STYLE:
-- Modern, clean, professional
-- Dark or light theme with good contrast
-- Large hero headlines (48px+)
-- Generous whitespace
-- Smooth hover transitions
-- Images from https://picsum.photos/800/600
+MUST INCLUDE:
+- @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+- * { box-sizing: border-box; margin: 0; padding: 0; }
+- Color variables using :root { --primary: #...; }
 
-Build as a SINGLE-PAGE APP - use JS to show/hide sections, not href links.`;
+DESIGN: Modern, clean, professional with good contrast and whitespace.
+
+SINGLE-PAGE APP: Use JS to show/hide sections, not href links.`;
 
   const messages = [
     ...conversationHistory.map(msg => ({
@@ -389,10 +389,16 @@ Build as a SINGLE-PAGE APP - use JS to show/hide sections, not href links.`;
           if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
             fullContent += parsed.delta.text;
 
+            // Strip markdown code blocks if present
+            let cleanContent = fullContent;
+            cleanContent = cleanContent.replace(/^```json\s*/i, '');
+            cleanContent = cleanContent.replace(/^```\s*/i, '');
+            cleanContent = cleanContent.replace(/\s*```$/i, '');
+
             // Extract values using custom parser (handles incomplete JSON)
-            const html = extractJsonValue(fullContent, 'html');
-            const css = extractJsonValue(fullContent, 'css');
-            const js = extractJsonValue(fullContent, 'js');
+            const html = extractJsonValue(cleanContent, 'html');
+            const css = extractJsonValue(cleanContent, 'css');
+            const js = extractJsonValue(cleanContent, 'js');
 
             if (html || css || js) {
               const newCode = {
@@ -411,6 +417,10 @@ Build as a SINGLE-PAGE APP - use JS to show/hide sections, not href links.`;
       }
     }
   }
+
+  // Log what was generated for debugging
+  console.log('Generated CSS length:', lastParsedCode.css?.length || 0);
+  console.log('Generated HTML length:', lastParsedCode.html?.length || 0);
 
   if (!hasUpdated && fullContent.length > 0) {
     console.error('Failed to parse response:', fullContent.substring(0, 1000));

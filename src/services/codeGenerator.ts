@@ -1,5 +1,21 @@
 import type { GeneratedCode } from '../types';
 
+/*
+ * FUTURE ENHANCEMENTS - Multi-step Generation Pipeline
+ * =====================================================
+ * Currently implemented:
+ * - [x] Planning phase: AI thinks through design before coding
+ *
+ * Future additions:
+ * - [ ] Self-review phase: After generation, AI reviews and identifies issues
+ * - [ ] Fix phase: AI fixes any issues found in review
+ * - [ ] Iterative refinement: Multiple passes to improve quality
+ * - [ ] Component extraction: Break into reusable components
+ * - [ ] Accessibility audit: Check for a11y issues
+ * - [ ] Performance review: Identify performance improvements
+ * - [ ] Image generation: Generate placeholder images via AI
+ */
+
 const API_KEY_STORAGE_KEY = 'atomic_api_key';
 
 export function getStoredApiKey(): string | null {
@@ -186,11 +202,104 @@ function extractJsonValue(content: string, key: string): string | null {
   return result;
 }
 
+// Planning phase - thinks through design before generating code
+export async function generatePlan(
+  prompt: string,
+  onPlanUpdate: (plan: string) => void
+): Promise<string> {
+  const apiKey = getStoredApiKey();
+  if (!apiKey) {
+    throw new Error('API key not configured.');
+  }
+
+  const planningPrompt = `You are a senior web designer planning a website. Given the user's request, think through the design approach.
+
+OUTPUT FORMAT (plain text, no JSON):
+**Design Direction**
+Brief description of the visual style and feel
+
+**Color Palette**
+- Primary: [color]
+- Secondary: [color]
+- Accent: [color]
+
+**Typography**
+- Headings: [font choice]
+- Body: [font choice]
+
+**Key Sections**
+1. [Section name] - [brief description]
+2. [Section name] - [brief description]
+...
+
+**Special Features**
+- [Feature 1]
+- [Feature 2]
+
+Keep it concise but thoughtful. 150 words max.`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      stream: true,
+      system: planningPrompt,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `Planning failed: ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const decoder = new TextDecoder();
+  let fullPlan = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    const lines = chunk.split('\n');
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6);
+        if (data === '[DONE]') continue;
+
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            fullPlan += parsed.delta.text;
+            onPlanUpdate(fullPlan);
+          }
+        } catch {
+          // Skip invalid SSE data
+        }
+      }
+    }
+  }
+
+  return fullPlan;
+}
+
 export async function generateCodeStreaming(
   prompt: string,
   currentCode: GeneratedCode,
   conversationHistory: Array<{ role: string; content: string }>,
-  onUpdate: (code: GeneratedCode) => void
+  onUpdate: (code: GeneratedCode) => void,
+  plan?: string
 ): Promise<GeneratedCode> {
   const apiKey = getStoredApiKey();
 
@@ -198,7 +307,9 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You are an expert web developer. Generate complete HTML, CSS, and JavaScript code.
+  const planContext = plan ? `\n\nDESIGN PLAN TO FOLLOW:\n${plan}\n\nFollow this plan closely when building.` : '';
+
+  const systemPrompt = `You are an expert web developer. Generate complete HTML, CSS, and JavaScript code.${planContext}
 
 RESPONSE FORMAT - Output ONLY this JSON structure:
 {"html":"...","css":"...","js":"..."}

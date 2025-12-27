@@ -155,24 +155,20 @@ export async function generateCodeStreaming(
 
   const systemPrompt = `You are an expert web developer. Generate complete, working HTML, CSS, and JavaScript code based on the user's request.
 
-IMPORTANT: You must respond with ONLY a JSON object in this exact format, no other text:
-{
-  "html": "<!-- HTML code here -->",
-  "css": "/* CSS code here */",
-  "js": "// JavaScript code here"
-}
+CRITICAL: Respond with ONLY valid JSON. No markdown, no code blocks, no explanation. Just the raw JSON object:
+{"html":"<your html>","css":"<your css>","js":"<your js>"}
+
+ESCAPING RULES (CRITICAL):
+- Newlines must be \\n
+- Quotes must be \\"
+- Backslashes must be \\\\
 
 Guidelines:
 - Create beautiful, modern, responsive designs
-- Use inline styles in CSS, not external imports (except Google Fonts)
-- Make the JavaScript functional and interactive
-- Include all necessary code for a complete working app
-- The code will run in an iframe sandbox
-
-Current code state:
-HTML: ${currentCode.html}
-CSS: ${currentCode.css}
-JS: ${currentCode.js}`;
+- Use Google Fonts via @import in CSS if needed
+- Make JavaScript functional and interactive
+- Build complete, working applications
+- Code runs in sandboxed iframe`;
 
   const messages = [
     ...conversationHistory.map(msg => ({
@@ -212,6 +208,7 @@ JS: ${currentCode.js}`;
   const decoder = new TextDecoder();
   let fullContent = '';
   let lastParsedCode = currentCode;
+  let lastParseError = '';
 
   while (true) {
     const { done, value } = await reader.read();
@@ -243,15 +240,21 @@ JS: ${currentCode.js}`;
                 lastParsedCode = newCode;
                 onUpdate(newCode);
               }
-            } catch {
-              // JSON not complete yet, continue
+            } catch (e) {
+              lastParseError = e instanceof Error ? e.message : 'Unknown parse error';
             }
           }
         } catch {
-          // Skip invalid JSON
+          // Skip invalid SSE data
         }
       }
     }
+  }
+
+  // If we never successfully parsed any code, throw an error
+  if (lastParsedCode === currentCode && fullContent.length > 0) {
+    console.error('Failed to parse response:', fullContent.substring(0, 500));
+    throw new Error(`Failed to parse AI response. ${lastParseError}`);
   }
 
   return lastParsedCode;

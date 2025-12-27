@@ -141,6 +141,51 @@ console.log('%c⚛ ATOMIC', 'color: #00ff9d; font-size: 20px; font-weight: bold;
 console.log('%cDescribe what you want to build...', 'color: #6b6b7a;');`
 };
 
+// Extract a JSON string value using regex - handles escaped quotes
+function extractJsonValue(content: string, key: string): string | null {
+  // Match "key": followed by the string value
+  const pattern = new RegExp(`"${key}"\\s*:\\s*"`, 'i');
+  const match = content.match(pattern);
+  if (!match || match.index === undefined) return null;
+
+  const startIdx = match.index + match[0].length;
+  let result = '';
+  let i = startIdx;
+
+  while (i < content.length) {
+    const char = content[i];
+
+    if (char === '\\' && i + 1 < content.length) {
+      const nextChar = content[i + 1];
+      if (nextChar === 'n') {
+        result += '\n';
+        i += 2;
+      } else if (nextChar === 't') {
+        result += '\t';
+        i += 2;
+      } else if (nextChar === '"') {
+        result += '"';
+        i += 2;
+      } else if (nextChar === '\\') {
+        result += '\\';
+        i += 2;
+      } else {
+        result += char;
+        i++;
+      }
+    } else if (char === '"') {
+      // End of string
+      return result;
+    } else {
+      result += char;
+      i++;
+    }
+  }
+
+  // String not terminated yet (streaming) - return partial
+  return result;
+}
+
 export async function generateCodeStreaming(
   prompt: string,
   currentCode: GeneratedCode,
@@ -153,22 +198,17 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You are an expert web developer. Generate complete, working HTML, CSS, and JavaScript code based on the user's request.
+  const systemPrompt = `You are an expert web developer. Generate complete HTML, CSS, and JavaScript code.
 
-CRITICAL: Respond with ONLY valid JSON. No markdown, no code blocks, no explanation. Just the raw JSON object:
-{"html":"<your html>","css":"<your css>","js":"<your js>"}
+RESPONSE FORMAT - Output ONLY this JSON structure:
+{"html":"...","css":"...","js":"..."}
 
-ESCAPING RULES (CRITICAL):
-- Newlines must be \\n
-- Quotes must be \\"
-- Backslashes must be \\\\
+ESCAPING: Use \\n for newlines, \\" for quotes, \\\\ for backslashes.
 
-Guidelines:
-- Create beautiful, modern, responsive designs
-- Use Google Fonts via @import in CSS if needed
-- Make JavaScript functional and interactive
-- Build complete, working applications
-- Code runs in sandboxed iframe`;
+REQUIREMENTS:
+- Beautiful, modern, responsive design
+- Complete working code
+- Use Google Fonts if needed (@import in CSS)`;
 
   const messages = [
     ...conversationHistory.map(msg => ({
@@ -208,7 +248,7 @@ Guidelines:
   const decoder = new TextDecoder();
   let fullContent = '';
   let lastParsedCode = currentCode;
-  let lastParseError = '';
+  let hasUpdated = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -227,21 +267,20 @@ Guidelines:
           if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
             fullContent += parsed.delta.text;
 
-            // Try to parse partial JSON and update preview
-            try {
-              const jsonMatch = fullContent.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                const codeObj = JSON.parse(jsonMatch[0]);
-                const newCode = {
-                  html: typeof codeObj.html === 'string' ? codeObj.html : lastParsedCode.html,
-                  css: typeof codeObj.css === 'string' ? codeObj.css : lastParsedCode.css,
-                  js: typeof codeObj.js === 'string' ? codeObj.js : lastParsedCode.js
-                };
-                lastParsedCode = newCode;
-                onUpdate(newCode);
-              }
-            } catch (e) {
-              lastParseError = e instanceof Error ? e.message : 'Unknown parse error';
+            // Extract values using custom parser (handles incomplete JSON)
+            const html = extractJsonValue(fullContent, 'html');
+            const css = extractJsonValue(fullContent, 'css');
+            const js = extractJsonValue(fullContent, 'js');
+
+            if (html || css || js) {
+              const newCode = {
+                html: html || lastParsedCode.html,
+                css: css || lastParsedCode.css,
+                js: js || lastParsedCode.js
+              };
+              lastParsedCode = newCode;
+              hasUpdated = true;
+              onUpdate(newCode);
             }
           }
         } catch {
@@ -251,10 +290,9 @@ Guidelines:
     }
   }
 
-  // If we never successfully parsed any code, throw an error
-  if (lastParsedCode === currentCode && fullContent.length > 0) {
-    console.error('Failed to parse response:', fullContent.substring(0, 500));
-    throw new Error(`Failed to parse AI response. ${lastParseError}`);
+  if (!hasUpdated && fullContent.length > 0) {
+    console.error('Failed to parse response:', fullContent.substring(0, 1000));
+    throw new Error('Failed to parse AI response. The model may have returned an unexpected format.');
   }
 
   return lastParsedCode;

@@ -306,18 +306,39 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You are an expert web developer. Generate complete HTML, CSS, and JavaScript code.
+  const systemPrompt = `You are an elite web designer and developer creating stunning, production-ready websites.
 
 RESPONSE FORMAT - Output ONLY this JSON structure:
 {"html":"...","css":"...","js":"..."}
 
 ESCAPING: Use \\n for newlines, \\" for quotes, \\\\ for backslashes.
 
-REQUIREMENTS:
-- Beautiful, modern, responsive design
-- Complete working code
-- Use Google Fonts if needed (@import in CSS)
-- IMPORTANT: Build as a SINGLE-PAGE APP. For navigation, use JavaScript to show/hide sections or swap content - do NOT use href links to other pages. All content must exist in one HTML document.`;
+DESIGN PRINCIPLES:
+- Use generous whitespace and padding (sections: 80-120px, elements: 20-40px)
+- Create clear visual hierarchy with size, weight, and color contrast
+- Limit color palette: 1 primary, 1 accent, 2-3 neutrals
+- Use modern fonts from Google Fonts (Inter, Poppins, Playfair Display, Space Grotesk)
+- Typography scale: 16px base, headings 2-4x larger, clear contrast
+
+VISUAL STYLE:
+- Subtle gradients and shadows for depth
+- Rounded corners (8-16px) for friendly feel
+- High-quality placeholder images from https://picsum.photos/WIDTH/HEIGHT
+- Smooth hover transitions (0.2-0.3s ease)
+- Consider dark mode aesthetics with rich backgrounds
+
+LAYOUT:
+- CSS Grid or Flexbox for all layouts
+- Max-width containers (1200-1400px) centered
+- Mobile-responsive with breakpoints at 768px and 480px
+- Full-viewport hero sections when appropriate
+
+CODE QUALITY:
+- Semantic HTML5 elements
+- CSS custom properties for colors
+- Clean, organized CSS with logical grouping
+- Smooth animations and micro-interactions
+- SINGLE-PAGE APP: Use JavaScript to show/hide sections - no href links to other pages`;
 
   const messages = [
     ...conversationHistory.map(msg => ({

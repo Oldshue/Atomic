@@ -306,32 +306,28 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You create stunning websites. Output JSON: {"html":"...","css":"...","js":"..."}
+  const systemPrompt = `You create stunning websites. Output JSON only: {"html":"...","css":"...","js":"..."}
 Use \\n for newlines, \\" for quotes.
 
-START your CSS with this exact base (then add your custom styles):
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #1a1a2e; background: #ffffff; }
-h1 { font-size: 3.5rem; font-weight: 700; line-height: 1.1; }
-h2 { font-size: 2.5rem; font-weight: 600; }
-h3 { font-size: 1.5rem; font-weight: 600; }
-p { font-size: 1.125rem; color: #4a4a68; }
-a { color: inherit; text-decoration: none; }
-ul { list-style: none; }
-img { max-width: 100%; display: block; }
-section { padding: 100px 20px; }
-.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-button { font-family: inherit; cursor: pointer; }
+Base CSS (fonts, reset, typography, utilities) is already included. You add custom styles.
 
-THEN add:
-- A dark gradient hero section with white text
-- Smooth hover transitions (transition: all 0.3s ease)
-- Professional images from https://picsum.photos/800/600
-- Modern buttons with hover states
-- Cards with subtle shadows
+Available utility classes: container, flex, flex-col, items-center, justify-center, justify-between, gap-2/4/6/8, grid, grid-cols-2/3, text-center, text-white, text-gray, rounded, rounded-lg, rounded-full, shadow, shadow-lg
 
-Single-page only - use JS for navigation, no href links.`;
+YOUR CSS should add:
+- Hero section styling (dark gradient backgrounds like linear-gradient(135deg, #0f172a, #1e293b))
+- Custom colors for buttons, links, accents
+- Hover states (:hover with transform, opacity, or color changes)
+- Section-specific backgrounds and layouts
+- Card designs
+
+YOUR HTML should:
+- Use semantic elements (header, nav, main, section, footer)
+- Wrap content in <div class="container">
+- Use the utility classes above
+- Include images from https://picsum.photos/800/600 (vary the numbers for different images)
+- Have a proper nav, hero, content sections, and footer
+
+Single-page only - use JS for section navigation, no href links to other pages.`;
 
   const messages = [
     ...conversationHistory.map(msg => ({
@@ -435,6 +431,108 @@ export function getDefaultCode(): GeneratedCode {
   return DEFAULT_CODE;
 }
 
+// Base CSS that ALWAYS gets injected - guarantees good styling
+const BASE_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: #0f172a;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+h2 { font-size: clamp(2rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+
+p {
+  font-size: 1.125rem;
+  color: #475569;
+  max-width: 65ch;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+section {
+  padding: 80px 24px;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Utility classes the model can use */
+.text-center { text-align: center; }
+.text-white { color: #ffffff; }
+.text-gray { color: #64748b; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.rounded { border-radius: 8px; }
+.rounded-lg { border-radius: 12px; }
+.rounded-full { border-radius: 9999px; }
+.shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.shadow-lg { box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+
+@media (max-width: 768px) {
+  section { padding: 60px 16px; }
+  .grid-cols-2, .grid-cols-3 { grid-template-columns: 1fr; }
+}
+`;
+
 export function buildPreviewHtml(code: GeneratedCode): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -442,7 +540,10 @@ export function buildPreviewHtml(code: GeneratedCode): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
-  <style>${code.css}</style>
+  <style>${BASE_CSS}
+
+/* Custom styles */
+${code.css}</style>
 </head>
 <body>
   ${code.html}

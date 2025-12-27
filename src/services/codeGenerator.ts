@@ -208,7 +208,8 @@ ESCAPING: Use \\n for newlines, \\" for quotes, \\\\ for backslashes.
 REQUIREMENTS:
 - Beautiful, modern, responsive design
 - Complete working code
-- Use Google Fonts if needed (@import in CSS)`;
+- Use Google Fonts if needed (@import in CSS)
+- IMPORTANT: Build as a SINGLE-PAGE APP. For navigation, use JavaScript to show/hide sections or swap content - do NOT use href links to other pages. All content must exist in one HTML document.`;
 
   const messages = [
     ...conversationHistory.map(msg => ({

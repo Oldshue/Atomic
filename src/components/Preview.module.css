@@ -3,47 +3,53 @@
   flex-direction: column;
   height: 100%;
   background: var(--bg-secondary);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-color);
+  box-shadow: 0 0 40px rgba(0, 255, 157, 0.03);
 }
 
 .browserBar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 8px 14px;
   background: var(--browser-bar);
   border-bottom: 1px solid var(--border-color);
 }
 
 .trafficLights {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  opacity: 0.8;
 }
 
 .dot:hover {
-  opacity: 0.8;
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .dot[data-color="red"] {
   background: #ff5f57;
+  box-shadow: 0 0 6px rgba(255, 95, 87, 0.4);
 }
 
 .dot[data-color="yellow"] {
   background: #ffbd2e;
+  box-shadow: 0 0 6px rgba(255, 189, 46, 0.4);
 }
 
 .dot[data-color="green"] {
-  background: #28c840;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
 }
 
 .addressBar {
@@ -52,31 +58,33 @@
   align-items: center;
   gap: 8px;
   background: var(--bg-tertiary);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
 }
 
 .lockIcon {
-  width: 14px;
-  height: 14px;
-  color: var(--success);
+  width: 12px;
+  height: 12px;
+  color: var(--accent);
 }
 
 .url {
   color: var(--text-secondary);
+  font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 .actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .actionBtn {
   background: transparent;
   border: none;
-  padding: 6px;
-  border-radius: 6px;
+  padding: 5px;
+  border-radius: 4px;
   cursor: pointer;
   color: var(--text-secondary);
   transition: all 0.2s;
@@ -84,22 +92,23 @@
 
 .actionBtn:hover {
   background: var(--bg-tertiary);
-  color: var(--text-primary);
+  color: var(--accent);
 }
 
 .actionBtn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 .previewContent {
   flex: 1;
   overflow: hidden;
+  background: #0a0a0f;
 }
 
 .iframe {
   width: 100%;
   height: 100%;
   border: none;
-  background: white;
+  background: #0a0a0f;
 }

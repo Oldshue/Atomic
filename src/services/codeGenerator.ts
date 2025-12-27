@@ -15,73 +15,130 @@ export function clearStoredApiKey(): void {
 }
 
 const DEFAULT_CODE: GeneratedCode = {
-  html: `<div class="welcome">
-  <h1>Welcome to Atomic</h1>
-  <p>Start vibecoding by typing a command below!</p>
-  <div class="examples">
-    <p>Try something like:</p>
-    <ul>
-      <li>"Create a landing page for a coffee shop"</li>
-      <li>"Build a todo list app"</li>
-      <li>"Make a weather dashboard"</li>
-    </ul>
+  html: `<div class="container">
+  <div class="nucleus"></div>
+  <div class="orbit orbit-1"><div class="electron"></div></div>
+  <div class="orbit orbit-2"><div class="electron"></div></div>
+  <div class="orbit orbit-3"><div class="electron"></div></div>
+
+  <div class="content">
+    <h1>ATOMIC</h1>
+    <p class="tagline">vibecode your next app</p>
+    <div class="prompt-hint">
+      <span class="cursor"></span>
+      <span>describe what you want to build...</span>
+    </div>
   </div>
 </div>`,
-  css: `body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  css: `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #050508;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: 20px;
+  overflow: hidden;
 }
 
-.welcome {
-  background: white;
-  padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nucleus {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #00ff9d;
+  border-radius: 50%;
+  box-shadow: 0 0 40px #00ff9d, 0 0 80px rgba(0, 255, 157, 0.5);
+  z-index: 10;
+}
+
+.orbit {
+  position: absolute;
+  border: 1px solid rgba(0, 255, 157, 0.15);
+  border-radius: 50%;
+  animation: spin 20s linear infinite;
+}
+
+.orbit-1 { width: 120px; height: 120px; animation-duration: 8s; }
+.orbit-2 { width: 200px; height: 200px; animation-duration: 12s; animation-direction: reverse; }
+.orbit-3 { width: 300px; height: 300px; animation-duration: 20s; }
+
+.electron {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #00ff9d;
+  border-radius: 50%;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px #00ff9d;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.content {
+  position: relative;
+  z-index: 20;
   text-align: center;
-  max-width: 500px;
+  margin-top: 200px;
 }
 
 h1 {
-  color: #1a1a2e;
-  margin-bottom: 0.5rem;
-  font-size: 2.5rem;
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  color: #e8e8ed;
+  text-shadow: 0 0 60px rgba(0, 255, 157, 0.3);
 }
 
-p {
-  color: #4a4a6a;
-  font-size: 1.1rem;
+.tagline {
+  font-size: 1rem;
+  color: #6b6b7a;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  margin-top: 0.5rem;
 }
 
-.examples {
-  margin-top: 2rem;
-  text-align: left;
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 12px;
+.prompt-hint {
+  margin-top: 3rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: #3a3a4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-.examples p {
-  font-weight: 600;
-  color: #1a1a2e;
-  margin-bottom: 0.5rem;
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #00ff9d;
+  animation: blink 1s step-end infinite;
 }
 
-ul {
-  color: #6366f1;
-  padding-left: 1.5rem;
-}
-
-li {
-  margin: 0.5rem 0;
+@keyframes blink {
+  50% { opacity: 0; }
 }`,
-  js: `// Your app logic will appear here
-console.log('Welcome to Atomic!');`
+  js: `// Atomic - vibecoding platform
+console.log('%c⚛ ATOMIC', 'color: #00ff9d; font-size: 20px; font-weight: bold;');
+console.log('%cDescribe what you want to build...', 'color: #6b6b7a;');`
 };
 
 export async function generateCode(

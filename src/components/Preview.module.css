@@ -106,6 +106,14 @@
   flex: 1;
   overflow: hidden;
   background: #0a0a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iframeWrapper {
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .iframe {

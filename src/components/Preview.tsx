@@ -7,10 +7,13 @@ interface PreviewProps {
   code: GeneratedCode;
 }
 
+const VIEWPORT_WIDTH = 1440;
+const VIEWPORT_HEIGHT = 900;
+
 export function Preview({ code }: PreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [scale, setScale] = useState(1);
 
   useEffect(() => {
     if (iframeRef.current) {
@@ -20,15 +23,17 @@ export function Preview({ code }: PreviewProps) {
   }, [code]);
 
   useEffect(() => {
-    const updateDimensions = () => {
+    const updateScale = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        setDimensions({ width: rect.width, height: rect.height });
+        const scaleX = rect.width / VIEWPORT_WIDTH;
+        const scaleY = rect.height / VIEWPORT_HEIGHT;
+        setScale(Math.min(scaleX, scaleY, 1));
       }
     };
 
-    updateDimensions();
-    const observer = new ResizeObserver(updateDimensions);
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
@@ -62,13 +67,26 @@ export function Preview({ code }: PreviewProps) {
         </div>
       </div>
       <div className={styles.previewContent} ref={containerRef}>
-        <iframe
-          ref={iframeRef}
-          className={styles.iframe}
-          style={{ width: dimensions.width, height: dimensions.height }}
-          sandbox="allow-scripts allow-forms allow-modals"
-          title="Preview"
-        />
+        <div
+          className={styles.iframeWrapper}
+          style={{
+            width: VIEWPORT_WIDTH * scale,
+            height: VIEWPORT_HEIGHT * scale
+          }}
+        >
+          <iframe
+            ref={iframeRef}
+            className={styles.iframe}
+            style={{
+              width: VIEWPORT_WIDTH,
+              height: VIEWPORT_HEIGHT,
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left'
+            }}
+            sandbox="allow-scripts allow-forms allow-modals"
+            title="Preview"
+          />
+        </div>
       </div>
     </div>
   );

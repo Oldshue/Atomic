@@ -56,30 +56,32 @@ export function CommandPanel({ messages, isGenerating, onSendMessage, onOpenSett
         </button>
       </div>
 
-      <div className={styles.messages}>
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`${styles.message} ${styles[message.role]}`}
-          >
-            <div className={styles.messageContent}>
-              {message.content}
-            </div>
-          </div>
-        ))}
-        {isGenerating && (
-          <div className={`${styles.message} ${styles.assistant}`}>
-            <div className={styles.messageContent}>
-              <div className={styles.typing}>
-                <span></span>
-                <span></span>
-                <span></span>
+      {(messages.length > 0 || isGenerating) && (
+        <div className={styles.messages}>
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`${styles.message} ${styles[message.role]}`}
+            >
+              <div className={styles.messageContent}>
+                {message.content}
               </div>
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          ))}
+          {isGenerating && (
+            <div className={`${styles.message} ${styles.assistant}`}>
+              <div className={styles.messageContent}>
+                <div className={styles.typing}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
 
       <form className={styles.inputContainer} onSubmit={handleSubmit}>
         <textarea

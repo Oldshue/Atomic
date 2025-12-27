@@ -306,24 +306,32 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You build beautiful, modern websites. Output JSON only: {"html":"...","css":"...","js":"..."}
+  const systemPrompt = `You create stunning websites. Output JSON: {"html":"...","css":"...","js":"..."}
+Use \\n for newlines, \\" for quotes.
 
-Escape newlines as \\n and quotes as \\"
+START your CSS with this exact base (then add your custom styles):
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #1a1a2e; background: #ffffff; }
+h1 { font-size: 3.5rem; font-weight: 700; line-height: 1.1; }
+h2 { font-size: 2.5rem; font-weight: 600; }
+h3 { font-size: 1.5rem; font-weight: 600; }
+p { font-size: 1.125rem; color: #4a4a68; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+section { padding: 100px 20px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+button { font-family: inherit; cursor: pointer; }
 
-Your CSS must:
-1. Reset defaults: * { margin: 0; padding: 0; box-sizing: border-box; }
-2. Import Inter font from Google Fonts
-3. Style body, h1-h6, p, a, ul, section elements directly
-4. Ensure readable contrast (light text on dark bg, dark text on light bg)
+THEN add:
+- A dark gradient hero section with white text
+- Smooth hover transitions (transition: all 0.3s ease)
+- Professional images from https://picsum.photos/800/600
+- Modern buttons with hover states
+- Cards with subtle shadows
 
-Design like Apple.com or Stripe.com:
-- Large hero typography (48px+)
-- Generous whitespace (80px+ section padding)
-- Professional images from picsum.photos
-- Smooth hover transitions
-- Modern color palette
-
-Single-page only - use JS to show/hide sections, no page links.`;
+Single-page only - use JS for navigation, no href links.`;
 
   const messages = [
     ...conversationHistory.map(msg => ({

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { buildPreviewHtml } from '../services/codeGenerator';
 import type { GeneratedCode } from '../types';
 import styles from './Preview.module.css';
@@ -7,13 +7,8 @@ interface PreviewProps {
   code: GeneratedCode;
 }
 
-const VIEWPORT_WIDTH = 1280;
-const VIEWPORT_HEIGHT = 720;
-
 export function Preview({ code }: PreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
 
   useEffect(() => {
     if (iframeRef.current) {
@@ -21,25 +16,6 @@ export function Preview({ code }: PreviewProps) {
       iframeRef.current.srcdoc = html;
     }
   }, [code]);
-
-  useEffect(() => {
-    const updateScale = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const scaleX = rect.width / VIEWPORT_WIDTH;
-        const scaleY = rect.height / VIEWPORT_HEIGHT;
-        setScale(Math.min(scaleX, scaleY));
-      }
-    };
-
-    updateScale();
-    const observer = new ResizeObserver(updateScale);
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div className={styles.container}>
@@ -66,8 +42,8 @@ export function Preview({ code }: PreviewProps) {
           </button>
         </div>
       </div>
-      <div className={styles.previewContent} ref={containerRef}>
-        <div className={styles.iframeWrapper} style={{ transform: `translate(-50%, -50%) scale(${scale})` }}>
+      <div className={styles.previewContent}>
+        <div className={styles.iframeWrapper}>
           <iframe
             ref={iframeRef}
             className={styles.iframe}

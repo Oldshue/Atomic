@@ -2,6 +2,16 @@ import { useState, useRef, useEffect } from 'react';
 import type { Message } from '../types';
 import styles from './CommandPanel.module.css';
 
+// Strip markdown formatting for cleaner display
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')  // **bold**
+    .replace(/\*(.*?)\*/g, '$1')       // *italic*
+    .replace(/`(.*?)`/g, '$1')         // `code`
+    .replace(/^#+\s*/gm, '')           // # headings
+    .replace(/^[-*]\s+/gm, '• ');      // bullet points
+}
+
 interface CommandPanelProps {
   messages: Message[];
   isGenerating: boolean;
@@ -73,7 +83,7 @@ export function CommandPanel({ messages, isGenerating, onSendMessage, onOpenSett
               className={`${styles.message} ${styles[message.role]}`}
             >
               <div className={styles.messageContent}>
-                {message.content}
+                {stripMarkdown(message.content)}
               </div>
             </div>
           ))}

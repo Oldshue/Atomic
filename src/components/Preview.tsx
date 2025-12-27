@@ -67,7 +67,7 @@ export function Preview({ code }: PreviewProps) {
         </div>
       </div>
       <div className={styles.previewContent} ref={containerRef}>
-        <div className={styles.iframeWrapper} style={{ transform: `scale(${scale})` }}>
+        <div className={styles.iframeWrapper} style={{ transform: `translate(-50%, -50%) scale(${scale})` }}>
           <iframe
             ref={iframeRef}
             className={styles.iframe}

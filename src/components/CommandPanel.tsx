@@ -57,11 +57,6 @@ export function CommandPanel({ messages, isGenerating, onSendMessage, onOpenSett
       </div>
 
       <div className={styles.messages}>
-        {messages.length === 0 && (
-          <div className={styles.emptyState}>
-            <p>Describe what you want to build...</p>
-          </div>
-        )}
         {messages.map((message) => (
           <div
             key={message.id}

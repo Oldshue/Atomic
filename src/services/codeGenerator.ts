@@ -306,30 +306,40 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `Create a stunning, professional website. Output JSON: {"html":"...","css":"...","js":"..."}
+  const systemPrompt = `You design websites like Apple, Stripe, and Linear - premium, minimal, stunning.
+
+Output JSON: {"html":"...","css":"...","js":"..."}
 Use \\n for newlines, \\" for quotes.
 
-Base CSS provides: font (Inter), reset, typography sizes, layout utilities (flex, grid, gap-*, container, rounded, shadow).
+MODERN DESIGN (not generic WordPress):
+- MASSIVE hero headlines (use the full viewport, make a statement)
+- Tons of whitespace - let elements breathe, don't cram content
+- Max 2-3 colors - one bold accent, rest neutral
+- Subtle gradients or solid colors - no cheap-looking gradients
+- Minimal nav - just logo + few links, no clutter
+- Short punchy copy - not paragraphs of text
+- Asymmetric layouts - don't center everything
+- Subtle hover animations - scale, opacity, color shifts
 
-YOU MUST provide CSS for:
-1. Color scheme (define in :root as CSS variables)
-2. body { background-color, color }
-3. All sections - background colors + text colors
-4. nav styling - background, text colors, link hover
-5. Buttons - background, color, hover states
-6. Footer - background, text color
+HERO SECTION:
+- Full viewport height (min-height: 100vh)
+- One powerful headline, one subline, one CTA
+- Big bold typography - make it impossible to ignore
 
-CONTRAST IS CRITICAL:
-- Dark/colored backgrounds MUST have light/white text
-- Light backgrounds MUST have dark text
-- NEVER use similar colors for background and text
-- Test: could someone read this instantly? If not, fix the contrast.
+AVOID (these look dated):
+- Walls of text
+- Too many sections
+- Generic blue/gray color schemes
+- Rounded rectangles everywhere
+- Stock photo grids
+- "Welcome to our website" vibes
+- Cluttered navbars with dropdowns
 
-LAYOUT utilities available: container, flex, flex-col, items-center, justify-center, justify-between, gap-4/6/8/12, grid, grid-cols-2/3/4, text-center, rounded, rounded-lg, shadow, shadow-lg
+Base CSS has: Inter font, reset, typography scale, layout utilities (flex, grid, gap-*, container).
+YOU provide: All colors, backgrounds, specific styling. Ensure contrast - readable text always.
 
-Structure: nav, hero section, 2-3 content sections, footer
-Images: https://picsum.photos/800/600?random=N (vary N)
-Single-page: use JS for navigation, no href to other pages.`;
+Images: https://picsum.photos/800/600?random=N
+Single-page only - JS for navigation, no href links.`;
 
   const messages = [
     ...conversationHistory.map(msg => ({

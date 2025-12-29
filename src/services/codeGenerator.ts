@@ -306,32 +306,30 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You create professional websites. Output JSON only: {"html":"...","css":"...","js":"..."}
+  const systemPrompt = `Create a stunning, professional website. Output JSON: {"html":"...","css":"...","js":"..."}
 Use \\n for newlines, \\" for quotes.
 
-A complete CSS framework is already loaded with perfect contrast. USE THESE CLASSES:
+Base CSS provides: font (Inter), reset, typography sizes, layout utilities (flex, grid, gap-*, container, rounded, shadow).
 
-STRUCTURE:
-- <nav> with <span class="logo"> and links - fixed dark nav, white text
-- <section class="hero"> - dark gradient, WHITE text guaranteed
-- <section class="section-light"> or <section class="section-gray"> - light bg, dark text
-- <section class="section-dark"> - dark bg, white text
-- <footer> - dark with white text
-- <div class="container"> - centers content, max-width 1200px
+YOU MUST provide CSS for:
+1. Color scheme (define in :root as CSS variables)
+2. body { background-color, color }
+3. All sections - background colors + text colors
+4. nav styling - background, text colors, link hover
+5. Buttons - background, color, hover states
+6. Footer - background, text color
 
-BUTTONS:
-- <button class="btn btn-primary"> - blue with hover effect
-- <button class="btn btn-secondary"> - white with dark border
+CONTRAST IS CRITICAL:
+- Dark/colored backgrounds MUST have light/white text
+- Light backgrounds MUST have dark text
+- NEVER use similar colors for background and text
+- Test: could someone read this instantly? If not, fix the contrast.
 
-COMPONENTS:
-- <div class="card"> - white card with shadow and hover
-- class="grid grid-cols-2" or "grid-cols-3" - responsive grid
-- class="flex items-center justify-between gap-4"
+LAYOUT utilities available: container, flex, flex-col, items-center, justify-center, justify-between, gap-4/6/8/12, grid, grid-cols-2/3/4, text-center, rounded, rounded-lg, shadow, shadow-lg
 
-IMAGES: https://picsum.photos/800/600?random=1 (change number for variety)
-
-YOUR CSS just adds custom colors or tweaks. The base handles contrast.
-Single-page only - use JS for navigation.`;
+Structure: nav, hero section, 2-3 content sections, footer
+Images: https://picsum.photos/800/600?random=N (vary N)
+Single-page: use JS for navigation, no href to other pages.`;
 
   const messages = [
     ...conversationHistory.map(msg => ({
@@ -435,177 +433,74 @@ export function getDefaultCode(): GeneratedCode {
   return DEFAULT_CODE;
 }
 
-// Base CSS that ALWAYS gets injected - guarantees good styling
+// Base CSS - handles fundamentals only, model controls all colors
 const BASE_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-:root {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --dark: #0f172a;
-  --dark-light: #1e293b;
-  --light: #f8fafc;
-  --gray: #64748b;
-  --white: #ffffff;
-}
-
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  line-height: 1.6;
-  color: var(--dark);
-  background: var(--white);
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  line-height: 1.2;
-}
+h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; }
+h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.2; margin-bottom: 1rem; }
+h3 { font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 600; line-height: 1.3; margin-bottom: 0.75rem; }
+p { font-size: 1.125rem; line-height: 1.8; margin-bottom: 1rem; }
 
-h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
-h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 1rem; }
-h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
-
-p { font-size: 1.125rem; color: var(--gray); }
-
-a { color: inherit; text-decoration: none; transition: all 0.3s ease; }
-a:hover { color: var(--primary); }
-
+a { text-decoration: none; transition: all 0.3s ease; }
 ul, ol { list-style: none; }
+img { max-width: 100%; height: auto; display: block; }
 
-img, video { max-width: 100%; height: auto; display: block; border-radius: 8px; }
-
-button, .btn {
+button {
   font-family: inherit;
   font-weight: 600;
-  padding: 14px 28px;
+  font-size: 1rem;
+  padding: 16px 32px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1rem;
 }
+button:hover { transform: translateY(-2px); }
 
-.btn-primary {
-  background: var(--primary);
-  color: var(--white);
-}
-.btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
-}
-
-.btn-secondary {
-  background: var(--white);
-  color: var(--dark);
-  border: 2px solid var(--dark);
-}
-.btn-secondary:hover {
-  background: var(--dark);
-  color: var(--white);
-}
-
-/* HERO - Dark background with WHITE text - always readable */
-.hero {
-  background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
-  color: var(--white);
-  padding: 120px 24px;
-  min-height: 80vh;
-  display: flex;
-  align-items: center;
-}
-.hero h1, .hero h2, .hero h3, .hero p { color: var(--white); }
-.hero p { color: rgba(255,255,255,0.8); }
-
-/* NAV */
-nav, .nav, .navbar {
-  padding: 20px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(10px);
-}
-nav a, .nav a, .navbar a { color: var(--white); font-weight: 500; }
-nav a:hover, .nav a:hover { color: var(--primary); }
-.logo { font-size: 1.5rem; font-weight: 800; color: var(--white); }
-
-/* SECTIONS */
 section { padding: 100px 24px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-.section-light { background: var(--white); color: var(--dark); }
-.section-light h1, .section-light h2, .section-light h3 { color: var(--dark); }
-
-.section-dark { background: var(--dark); color: var(--white); }
-.section-dark h1, .section-dark h2, .section-dark h3, .section-dark p { color: var(--white); }
-.section-dark p { color: rgba(255,255,255,0.8); }
-
-.section-gray { background: var(--light); color: var(--dark); }
-
-/* CONTAINER */
-.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-
-/* CARDS */
-.card {
-  background: var(--white);
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
-}
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
-}
-
-/* FOOTER */
-footer {
-  background: var(--dark);
-  color: var(--white);
-  padding: 60px 24px 30px;
-}
-footer p, footer a { color: rgba(255,255,255,0.7); }
-footer a:hover { color: var(--white); }
-
-/* UTILITIES */
-.text-center { text-align: center; }
+/* Layout utilities */
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
 .items-center { align-items: center; }
+.items-start { align-items: flex-start; }
 .justify-center { justify-content: center; }
 .justify-between { justify-content: space-between; }
-.gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
 .gap-6 { gap: 1.5rem; }
 .gap-8 { gap: 2rem; }
+.gap-12 { gap: 3rem; }
 .grid { display: grid; }
 .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-.mt-4 { margin-top: 1rem; }
+.text-center { text-align: center; }
+.mx-auto { margin-left: auto; margin-right: auto; }
 .mt-8 { margin-top: 2rem; }
-.mb-4 { margin-bottom: 1rem; }
 .mb-8 { margin-bottom: 2rem; }
+.py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+.rounded { border-radius: 8px; }
+.rounded-lg { border-radius: 12px; }
+.rounded-xl { border-radius: 16px; }
+.shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.shadow-lg { box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
 
 @media (max-width: 768px) {
   section { padding: 60px 16px; }
-  .hero { padding: 100px 16px; min-height: 70vh; }
   .grid-cols-2, .grid-cols-3, .grid-cols-4 { grid-template-columns: 1fr; }
-  nav { padding: 16px; }
+  h1 { font-size: 2.5rem; }
 }
 `;
 

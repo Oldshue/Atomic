@@ -306,39 +306,29 @@ export async function generateCodeStreaming(
     throw new Error('API key not configured. Please set your Anthropic API key.');
   }
 
-  const systemPrompt = `You design websites like Apple, Stripe, and Linear - premium, minimal, stunning.
+  const systemPrompt = `You're a world-class web designer. For each request, think:
+
+1. What type of site is this? (real estate, restaurant, law firm, SaaS, portfolio, etc.)
+2. What do the BEST sites in this industry look like? (Think of the top players)
+3. What makes users trust and convert on these sites?
+4. What color schemes, layouts, and imagery work for this specific industry?
+
+Then build the BEST possible version of that type of site.
 
 Output JSON: {"html":"...","css":"...","js":"..."}
 Use \\n for newlines, \\" for quotes.
 
-MODERN DESIGN (not generic WordPress):
-- MASSIVE hero headlines (use the full viewport, make a statement)
-- Tons of whitespace - let elements breathe, don't cram content
-- Max 2-3 colors - one bold accent, rest neutral
-- Subtle gradients or solid colors - no cheap-looking gradients
-- Minimal nav - just logo + few links, no clutter
-- Short punchy copy - not paragraphs of text
-- Asymmetric layouts - don't center everything
-- Subtle hover animations - scale, opacity, color shifts
+REQUIREMENTS:
+- Design specifically for the industry/use case - not generic
+- Use appropriate imagery, colors, tone for that business type
+- Ensure all text is readable (proper contrast)
+- Modern, professional, conversion-focused
+- Would a real business pay for this? If not, improve it.
 
-HERO SECTION:
-- Full viewport height (min-height: 100vh)
-- One powerful headline, one subline, one CTA
-- Big bold typography - make it impossible to ignore
+Base CSS provides: Inter font, reset, typography scale, utilities (flex, grid, gap-*, container, rounded, shadow).
+YOU provide: All colors, backgrounds, industry-appropriate styling.
 
-AVOID (these look dated):
-- Walls of text
-- Too many sections
-- Generic blue/gray color schemes
-- Rounded rectangles everywhere
-- Stock photo grids
-- "Welcome to our website" vibes
-- Cluttered navbars with dropdowns
-
-Base CSS has: Inter font, reset, typography scale, layout utilities (flex, grid, gap-*, container).
-YOU provide: All colors, backgrounds, specific styling. Ensure contrast - readable text always.
-
-Images: https://picsum.photos/800/600?random=N
+Images: https://picsum.photos/800/600?random=N (vary dimensions as needed)
 Single-page only - JS for navigation, no href links.`;
 
   const messages = [
